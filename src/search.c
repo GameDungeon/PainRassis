@@ -21,7 +21,7 @@ static void PickNextMove(int moveNum, S_MOVELIST *list) {
 
 	S_MOVE temp;
 	int index = 0;
-	int bestScore = 0;
+	int bestScore = -100000;
 	int bestNum = moveNum;
 
 	for (index = moveNum; index < list->count; ++index) {
@@ -32,7 +32,6 @@ static void PickNextMove(int moveNum, S_MOVELIST *list) {
 	}
 
 	ASSERT(moveNum>=0 && moveNum<list->count);
-	ASSERT(bestNum>=0 && bestNum<list->count);
 	ASSERT(bestNum>=moveNum);
 
 	temp = list->moves[moveNum];
