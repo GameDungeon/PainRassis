@@ -3,16 +3,20 @@
 #include "stdio.h"
 #include "defs.h"
 
+const int CenterCovered = 10;
+
 const int PawnIsolated = -10;
-const int HangingPawn = 0;
-const int PawnlessPenalty = -20;
-const int PawnPassed[8] = { 0, 5, 10, 20, 35, 60, 100, 200 }; 
+const int PawnlessPenalty = -30;
+
+const int BackRankKnightPenalty = -10;
+const int BackRankBishopPenalty = -5;
+
 const int RookOpenFile = 10;
 const int RookSemiOpenFile = 5;
 const int QueenOpenFile = 5;
 const int QueenSemiOpenFile = 3;
+
 const int BishopPair = 30;
-const int CenterCovered = 10;
 
 const int CenterSquares[4] = {28, 29, 36, 37};
 
@@ -81,31 +85,35 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq));
 		ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
-	
-		//if(!SqAttacked(sq, side, pos) /*&& SqAttacked(sq, pos->side^1, pos)*/)
-		//	score += HangingPawn;
 		
 		if((IsolatedMask[SQ64(sq)] & pos->pawns[side]) == 0) {
 			score += PawnIsolated;
 		}
-		
-		if(side == WHITE && ((WhitePassedMask[SQ64(sq)] & pos->pawns[BLACK]) == 0)) {
-			score += PawnPassed[RanksBrd[sq]];
-		}
-	
-		if(side == BLACK && ((BlackPassedMask[SQ64(sq)] & pos->pawns[WHITE]) == 0)) {
-			score += PawnPassed[7 - RanksBrd[sq]];
-		}
-	}	
+	}
+
+	if(pos->pceNum[pce] <= 0)
+	{
+		score += PawnlessPenalty;
+	}
 	
 	pce = KNIGHT;	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
+
+		if(RanksBrd[sq] == 1 || RanksBrd[sq] == 8)
+		{
+			score += BackRankKnightPenalty;
+		}
 	}	
 	
 	pce = BISHOP;	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
+
+		if(RanksBrd[sq] == 1 || RanksBrd[sq] == 8)
+		{
+			score += BackRankBishopPenalty;
+		}
 	}	
 
 	pce = ROOK;	
@@ -162,7 +170,7 @@ int EvalPosition(const S_BOARD *pos, const int LegalMoveCount, const int Opponen
 
 	if(OpponentLegalMoveCount != 0)
 	{
-		score += (LegalMoveCount - OpponentLegalMoveCount) * 2;
+		score += (LegalMoveCount - OpponentLegalMoveCount);
 	}
 
 	score += EvalPositionSided(pos, pos->side) - EvalPositionSided(pos, pos->side^1);
