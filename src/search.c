@@ -98,12 +98,11 @@ static int Quiescence(int alpha, int beta, S_BOARD *pos, S_SEARCHINFO *info) {
 	S_MOVELIST list[1];
     GenerateAllCaps(pos,list);
 
-	int OLegal = CountAllMoves(pos, pos->side^1);
 	if(pos->ply > MAXDEPTH - 1) {
-		return EvalPosition(pos, list->count, OLegal);
+		return EvalPosition(pos);
 	}
 
-	int Score = EvalPosition(pos, list->count, OLegal);
+	int Score = EvalPosition(pos);
 
 	ASSERT(Score>-AB_BOUND && Score<AB_BOUND);
 
@@ -172,9 +171,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
 	}
 
 	if(pos->ply > MAXDEPTH - 1) {
-		int Legal = CountAllMoves(pos, pos->side);
-		int OLegal = CountAllMoves(pos, pos->side^1);
-		return EvalPosition(pos, Legal, OLegal);
+		return EvalPosition(pos);
 	}
 
 	int InCheck = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);

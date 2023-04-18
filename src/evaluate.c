@@ -5,8 +5,7 @@
 
 const int CenterCovered = 10;
 
-const int PawnIsolated = -10;
-const int PawnlessPenalty = -30;
+const int PawnlessPenalty = -50;
 
 const int BackRankKnightPenalty = -10;
 const int BackRankBishopPenalty = -5;
@@ -79,10 +78,6 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq));
 		ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
-		
-		if((IsolatedMask[SQ64(sq)] & pos->pawns[side]) == 0) {
-			score += PawnIsolated;
-		}
 	}
 
 	if(pos->pceNum[pce] <= 0)
@@ -148,7 +143,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 	return score;
 }
 
-int EvalPosition(const S_BOARD *pos, const int LegalMoveCount, const int OpponentLegalMoveCount) {
+int EvalPosition(const S_BOARD *pos) {
 
 	ASSERT(CheckBoard(pos));
 
@@ -161,11 +156,6 @@ int EvalPosition(const S_BOARD *pos, const int LegalMoveCount, const int Opponen
 	}
 
 	int score = 0;
-
-	if(OpponentLegalMoveCount != 0)
-	{
-		score += (LegalMoveCount - OpponentLegalMoveCount);
-	}
 
 	score += EvalPositionSided(pos, pos->side) - EvalPositionSided(pos, pos->side^1);
 

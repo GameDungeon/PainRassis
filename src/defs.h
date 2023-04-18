@@ -449,9 +449,6 @@ extern void GenerateAllCaps(const S_BOARD *pos, S_MOVELIST *list);
 extern int MoveExists(S_BOARD *pos, const int move);
 extern void InitMvvLva();
 
-// movecount.c
-extern int CountAllMoves(const S_BOARD *pos, int side);
-
 // makemove.c
 extern int MakeMove(S_BOARD *pos, int move);
 extern void TakeMove(S_BOARD *pos);
@@ -478,7 +475,7 @@ extern int GetPvLine(const int depth, S_BOARD *pos, const S_HASHTABLE *table);
 extern void ClearHashTable(S_HASHTABLE *table);
 
 // evaluate.c
-extern int EvalPosition(const S_BOARD *pos, const int legalMoveCount, const int OpponentLegalMoveCount);
+extern int EvalPosition(const S_BOARD *pos);
 
 // uci.c
 extern void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info);
