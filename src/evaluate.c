@@ -20,13 +20,6 @@ const int BishopPair = 30;
 
 const int CenterSquares[4] = {28, 29, 36, 37};
 
-#define PAWN wP + peiceOffset
-#define KNIGHT wN + peiceOffset
-#define BISHOP wB + peiceOffset
-#define ROOK wR + peiceOffset
-#define QUEEN wQ + peiceOffset
-#define KING wK + peiceOffset
-
 int MaterialDraw(const S_BOARD *pos) {
 
 	ASSERT(CheckBoard(pos));
@@ -51,7 +44,9 @@ int MaterialDraw(const S_BOARD *pos) {
   return FALSE;
 }
 
-#define ENDGAME_MAT (1 * PieceVal[wR] + 2 * PieceVal[wN] + 2 * PieceVal[wP] + PieceVal[wK])
+static int GetPiece(const int piecetype, const int color) {
+    return piecetype + 6 * color;
+}
 
 static int EvalPositionSided(const S_BOARD *pos, int side) {
 
@@ -60,16 +55,15 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 	int pce;
 	int pceNum;
 	int sq;
-
+	int pieceOffset = side * 6;
 	int opSide = side^1;
-	int peiceOffset = side ? 0 : 6;
 
 	int score = pos->material[side];
 
 	for(int i = 0; i < 4; ++i)
 	{
 		sq = CenterSquares[i];
-		if((pos->pieces[SQ120(sq)] >= (peiceOffset + 1)) && (pos->pieces[SQ120(sq)] < (peiceOffset + 7)))
+		if((pos->pieces[SQ120(sq)] >= (pieceOffset + 1)) && (pos->pieces[SQ120(sq)] < (pieceOffset + 7)))
 		{
 			score += CenterCovered;
 			continue;
@@ -80,7 +74,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}
 
-	pce = PAWN;	
+	pce = GetPiece(PAWN, side);	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq));
@@ -96,7 +90,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		score += PawnlessPenalty;
 	}
 	
-	pce = KNIGHT;	
+	pce = GetPiece(KNIGHT, side);;	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 
@@ -106,7 +100,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}	
 	
-	pce = BISHOP;	
+	pce = GetPiece(BISHOP, side);;	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 
@@ -116,7 +110,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}	
 
-	pce = ROOK;	
+	pce = GetPiece(ROOK, side);;	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 	
@@ -129,7 +123,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}
 	
-	pce = QUEEN;	
+	pce = GetPiece(QUEEN, side);;	
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 	
@@ -144,7 +138,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}	
 
-	pce = KING;
+	pce = GetPiece(KING, side);
 	sq = pos->pList[pce][0];
 	ASSERT(SqOnBoard(sq));
 	ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);

@@ -54,4 +54,6 @@ dkms.conf
 
 .vscode
 
+*.pgn
+
 output.txt

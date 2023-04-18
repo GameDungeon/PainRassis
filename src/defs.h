@@ -58,6 +58,14 @@ enum
 	bQ,
 	bK
 };
+enum {
+    PAWN=1, 
+	KNIGHT, 
+	BISHOP, 
+	ROOK, 
+	QUEEN, 
+	KING
+};
 enum
 {
 	FILE_A,
