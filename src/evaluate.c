@@ -90,7 +90,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		score += PawnlessPenalty;
 	}
 	
-	pce = GetPiece(KNIGHT, side);;	
+	pce = GetPiece(KNIGHT, side);
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 
@@ -100,7 +100,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}	
 	
-	pce = GetPiece(BISHOP, side);;	
+	pce = GetPiece(BISHOP, side);
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 
@@ -110,7 +110,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}	
 
-	pce = GetPiece(ROOK, side);;	
+	pce = GetPiece(ROOK, side);
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 	
@@ -123,7 +123,7 @@ static int EvalPositionSided(const S_BOARD *pos, int side) {
 		}
 	}
 	
-	pce = GetPiece(QUEEN, side);;	
+	pce = GetPiece(QUEEN, side);
 	for(pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 	
