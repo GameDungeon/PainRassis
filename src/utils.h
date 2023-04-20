@@ -1,6 +1,8 @@
 #pragma once
 
-extern inline int FileRankToSquare(int file, int rank)
+#include "constants.h"
+
+extern inline Square FileRankToSquare(int file, int rank)
 {
-    return rank * 8 + file;
+    return Square(rank * 8 + file);
 }

@@ -12,11 +12,16 @@ inline const int MAXGAMEHISTORY = 2048;
 
 const std::string STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-enum Color : int
+const char* const PceChar[] =
+{
+    "PNBRQK",
+    "pnbrqk",
+};
+
+enum Color : uint8_t
 {
     WHITE, 
-    BLACK,
-    BOTH
+    BLACK
 };
 
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
@@ -46,6 +51,10 @@ enum Piece : int
 };
 
 enum { WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8 };
+
+const char SideChar[] = "wb-";
+const char RankChar[] = "12345678";
+const char FileChar[] = "abcdefgh";
 
 #ifndef DEBUG
 #define ASSERT(n)

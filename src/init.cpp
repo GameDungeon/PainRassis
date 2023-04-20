@@ -2,11 +2,18 @@
 #include "init.h"
 #include "utils.h"
 
+uint64_t PieceKeys[12][64];
+uint64_t SideKey;
+uint64_t CastleKeys[16];
+
+int FilesBrd[64];
+int RanksBrd[64];
+
 void InitHashKeys() {
 	int index = 0;
 	int index2 = 0;
-	for(index = 0; index < 13; ++index) {
-		for(index2 = 0; index2 < 120; ++index2) {
+	for(index = 0; index < 12; ++index) {
+		for(index2 = 0; index2 < 64; ++index2) {
 			PieceKeys[index][index2] = RAND_64;
 		}
 	}

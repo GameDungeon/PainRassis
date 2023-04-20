@@ -2,6 +2,7 @@
 
 #include "constants.h"
 #include "bitboard.h"
+#include <string>
 
 typedef struct {
     Square enPas;
@@ -16,6 +17,17 @@ typedef struct {
 class Board
 {
 public:
+    void Reset();
+    uint64_t GeneratePosKey();
+    bool ParseFen(const std::string &fen);
+
+    void SetPiece(Piece piece, Square sq, Color color);
+    void ClearPiece(Piece piece, Square sq);
+
+    Piece GetPieceBySq(Square sq);
+
+    void PrintBoard();
+
     Bitboard SidedBitBoard;
     Bitboard PieceBitBoard[6];
 

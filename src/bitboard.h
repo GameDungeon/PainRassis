@@ -11,6 +11,8 @@ struct Bitboard {
 
     uint64_t bb = 0;
 
+    void PrintBitBoard();
+
     constexpr Bitboard(uint64_t value) {
         bb = value;
     }
@@ -19,16 +21,20 @@ struct Bitboard {
 
     constexpr Bitboard() = default;
 
-    constexpr bool get(Square square) const {
-        return (bb >> square) & 1;
+    constexpr bool get(Square sq) const {
+        return (bb >> sq) & 1;
     }
 
-    constexpr void set(Square square) {
-        bb |= 1ULL << square;
+    constexpr void set(Square sq) {
+        bb |= 1ULL << sq;
     }
 
-    constexpr void clear(Square square) {
-        bb &= ~(1ULL << square);
+    constexpr void clear(Square sq) {
+        bb &= ~(1ULL << sq);
+    }
+
+    constexpr void setTo(Square sq, bool x) {
+        bb ^= (-x ^ bb) & (1ULL << sq);
     }
 
     constexpr int popCount() const {

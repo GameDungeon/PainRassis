@@ -8,7 +8,7 @@
                  (uint64_t)rand() << 45 | \
                 ((uint64_t)rand() & 0xf) << 60 )
 
-extern uint64_t PieceKeys[13][120];
+extern uint64_t PieceKeys[12][64];
 extern uint64_t SideKey;
 extern uint64_t CastleKeys[16];
 

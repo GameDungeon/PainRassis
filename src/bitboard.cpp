@@ -1,7 +1,7 @@
 #include "bitboard.h"
 #include "utils.h"
 
-void PrintBitBoard(Bitboard bb) {
+void Bitboard::PrintBitBoard() {
 
 	Bitboard shiftMe = 1ULL;
 	
