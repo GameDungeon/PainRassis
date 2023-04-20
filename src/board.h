@@ -25,7 +25,7 @@ public:
     int fiftyMove;
 
     int ply;
-    int hisPlt;
+    int hisPly;
 
     int castlePerm;
 

@@ -40,6 +40,29 @@ struct Bitboard {
 #endif
     }
 
+    // Returns the square with the lowest index, that is set to 1.
+    constexpr Square lsb() const {
+
+#ifdef __GNUC__
+        return Square(__builtin_ctzll(bb));
+#elif defined(_MSC_VER)
+#ifndef __INTELLISENSE__ // This is a cursed hack
+        unsigned long a;
+        _BitScanForward64(&a, bb);
+        return Square(a);
+#endif
+#else
+#error "Unsupported compiler!"
+#endif
+    }
+
+    // Clears the square with the lowest index, that is set to 1.
+    constexpr Square popLsb() {
+        Square square = lsb();
+        bb &= bb - 1;
+        return square;
+    }
+
     constexpr Bitboard operator*(Bitboard a) const {
         return bb * a.bb;
     }
