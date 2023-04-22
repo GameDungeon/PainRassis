@@ -1,5 +1,8 @@
 #include "bitboard.h"
 #include "utils.h"
+#include <string>
+#include <cstring>
+#include <iostream>
 
 void Bitboard::PrintBitBoard() {
 
@@ -24,3 +27,4 @@ void Bitboard::PrintBitBoard() {
 	}  
     printf("\n\n");
 }
+

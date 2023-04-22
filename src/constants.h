@@ -1,7 +1,9 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
+
+#include "init.h"
 
 #define DEBUG
 
@@ -38,6 +40,32 @@ enum Square : int
   A7, B7, C7, D7, E7, F7, G7, H7,
   A8, B8, C8, D8, E8, F8, G8, H8, NO_SQ
 };
+
+inline Square operator+(Square &a, int b) {
+    return Square(int(a) + b);
+}
+
+inline Square operator-(Square &a, int b) {
+    return Square(int(a) - b);
+}
+
+inline Square operator+=(Square &a, int b) {
+    return a = a + b;
+}
+
+inline Square operator-=(Square &a, int b) {
+    return a = a - b;
+}
+
+inline Square flipSquare(Square &sq) {
+    return Square(int(sq) ^ 56);
+}
+
+inline Square operator++(Square &sq) {
+    return sq += 1;
+}
+
+
 
 enum Piece : int
 {

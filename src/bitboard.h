@@ -7,7 +7,7 @@
 #include <nmmintrin.h>
 #endif
 
-struct Bitboard {
+typedef struct Bitboard {
 
     uint64_t bb = 0;
 
@@ -37,7 +37,14 @@ struct Bitboard {
         bb ^= (-x ^ bb) & (1ULL << sq);
     }
 
-    constexpr int popCount() const {
+    constexpr bool pop(Square sq)
+    {
+        bool x = get(sq);
+        clear(sq);
+        return x;
+    }
+
+    constexpr int Count() const {
 
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
         return (int) _mm_popcnt_u64(bb);
@@ -140,6 +147,26 @@ struct Bitboard {
     constexpr explicit operator uint64_t() const {
         return bb;
     }
-};
+} Bitboard;
 
 extern void PrintBitBoard(Bitboard bb);
+
+constexpr Bitboard fileA = 0x101010101010101ULL;
+constexpr Bitboard fileB = fileA << 1;
+constexpr Bitboard fileC = fileA << 2;
+constexpr Bitboard fileD = fileA << 3;
+constexpr Bitboard fileE = fileA << 4;
+constexpr Bitboard fileF = fileA << 5;
+constexpr Bitboard fileG = fileA << 6;
+constexpr Bitboard fileH = fileA << 7;
+
+constexpr Bitboard rank1 = 0xff;
+constexpr Bitboard rank2 = rank1 << (1 * 8);
+constexpr Bitboard rank3 = rank1 << (2 * 8);
+constexpr Bitboard rank4 = rank1 << (3 * 8);
+constexpr Bitboard rank5 = rank1 << (4 * 8);
+constexpr Bitboard rank6 = rank1 << (5 * 8);
+constexpr Bitboard rank7 = rank1 << (6 * 8);
+constexpr Bitboard rank8 = rank1 << (7 * 8);
+
+constexpr Bitboard edges = rank1 | rank8 | fileA | fileH;

@@ -1,6 +1,5 @@
 #include "constants.h"
 #include "board.h"
-#include "init.h"
 #include "utils.h"
 
 void Board::SetPiece(Piece piece, Square sq, Color color)

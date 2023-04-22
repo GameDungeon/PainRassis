@@ -1,12 +1,6 @@
 #pragma once
 
-#include "stdint.h"
-
-#define RAND_64 ((uint64_t)rand() | \
-                 (uint64_t)rand() << 15 | \
-                 (uint64_t)rand() << 30 | \
-                 (uint64_t)rand() << 45 | \
-                ((uint64_t)rand() & 0xf) << 60 )
+#include <cstdint>
 
 extern uint64_t PieceKeys[12][64];
 extern uint64_t SideKey;

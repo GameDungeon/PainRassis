@@ -1,6 +1,7 @@
 #include "constants.h"
-#include "init.h"
 #include "utils.h"
+#include "attacks.h"
+#include "magics.h"
 
 uint64_t PieceKeys[12][64];
 uint64_t SideKey;
@@ -14,12 +15,12 @@ void InitHashKeys() {
 	int index2 = 0;
 	for(index = 0; index < 12; ++index) {
 		for(index2 = 0; index2 < 64; ++index2) {
-			PieceKeys[index][index2] = RAND_64;
+			PieceKeys[index][index2] = random_uint64();
 		}
 	}
-	SideKey = RAND_64;
+	SideKey = random_uint64();
 	for(index = 0; index < 16; ++index) {
-		CastleKeys[index] = RAND_64;
+		CastleKeys[index] = random_uint64();
 	}
 
 }
@@ -39,7 +40,13 @@ void InitFilesRanksBrd() {
 	}
 }
 
+void InitMagicTables() {
+	initBishopMagicTable();
+	initRookMagicTable();
+}
+
 void AllInit() {
 	InitHashKeys();
     InitFilesRanksBrd();
+	InitMagicTables();
 }

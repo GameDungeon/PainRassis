@@ -30,6 +30,7 @@ public:
 
     Bitboard SidedBitBoard;
     Bitboard PieceBitBoard[6];
+    Bitboard SquareAttacked[2];
 
     Square enPas;
 
