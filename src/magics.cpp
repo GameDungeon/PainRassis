@@ -11,7 +11,7 @@
 Bitboard BishopAttacks[64][1024];
 Bitboard RookAttacks  [64][4096];
 
-Bitboard index_to_uint64(int index, int bits, Bitboard m) {
+Bitboard getBlockersFromIndex(int index, int bits, Bitboard m) {
   int i, j;
   Bitboard result = 0ULL;
   for(i = 0; i < bits; i++) {
@@ -29,7 +29,7 @@ void initRookMagicTable() {
     for (Square sq = A1; sq < 64; ++sq) {
         Magic magic = RookMagics[sq];
         for (int blockerIndex = 0; blockerIndex < (1 << magic.shift); blockerIndex++) {
-            Bitboard blockers = index_to_uint64(blockerIndex, magic.shift, magic.mask);
+            Bitboard blockers = getBlockersFromIndex(blockerIndex, magic.shift, magic.mask);
             RookAttacks[sq][getMagicIndex(magic, blockers)] = RookAttackSlow(sq, blockers);
         }
     }
@@ -39,7 +39,7 @@ void initBishopMagicTable() {
     for (Square sq = A1; sq < 64; ++sq) {
         Magic magic = BishopMagics[sq];
         for (int blockerIndex = 0; blockerIndex < (1 << magic.shift); blockerIndex++) {
-            Bitboard blockers = index_to_uint64(blockerIndex, magic.shift, magic.mask);
+            Bitboard blockers = getBlockersFromIndex(blockerIndex, magic.shift, magic.mask);
             BishopAttacks[sq][getMagicIndex(magic, blockers)] = BishopAttackSlow(sq, blockers);
         }
     }
@@ -56,7 +56,7 @@ uint64_t find_magic(Square sq, int m, int bishop, Bitboard mask) {
     n = mask.Count();
 
     for(i = 0; i < (1 << n); i++) {
-        blockers[i] = index_to_uint64(i, n, mask);
+        blockers[i] = getBlockersFromIndex(i, n, mask);
         attack[i] = bishop? BishopAttackSlow(sq, blockers[i]) : RookAttackSlow(sq, blockers[i]);
     }
 
