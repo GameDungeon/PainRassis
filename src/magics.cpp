@@ -31,9 +31,9 @@ void initRookMagicTable()
     {
         Magic magic = RookMagics[sq];
 
-        for (int index = 0; index < (1 << magic.shift); index++)
+        for (int i = 0; i < (1 << magic.shift); i++)
         {
-            Bitboard blockers = getBlockersFromIndex(index, magic.mask);
+            Bitboard blockers = getBlockersFromIndex(i, magic.mask);
             RookAttacks[sq][getMagicIndex(magic, blockers)] = RookAttackSlow(sq, blockers);
         }
     }
@@ -45,9 +45,9 @@ void initBishopMagicTable()
     {
         Magic magic = BishopMagics[sq];
 
-        for (int blockerIndex = 0; blockerIndex < (1 << magic.shift); blockerIndex++)
+        for (int i = 0; i < (1 << magic.shift); i++)
         {
-            Bitboard blockers = getBlockersFromIndex(blockerIndex, magic.mask);
+            Bitboard blockers = getBlockersFromIndex(i, magic.mask);
             BishopAttacks[sq][getMagicIndex(magic, blockers)] = BishopAttackSlow(sq, blockers);
         }
     }
@@ -64,41 +64,38 @@ Magic findMagic(Square sq, bool bishop, Bitboard mask)
     magic.mask = mask;
     magic.shift = magic.mask.Count();
 
-    int k, n, i, j;
+    unsigned int length = 0;
+    Bitboard occ = 0;
+    do {
+        blockers[length] = occ;
+        attack[length] = bishop ? BishopAttackSlow(sq, occ) : RookAttackSlow(sq, occ);
 
-    for (i = 0; i < (1 << n); i++)
-    {
-        blockers[i] = getBlockersFromIndex(i, mask);
-        attack[i] = bishop ? BishopAttackSlow(sq, blockers[i]) : RookAttackSlow(sq, blockers[i]);
-    }
+        length++;
+        occ = (occ - magic.mask) & magic.mask;
+    } while (occ != 0);
 
-    for (k = 0; k < 100000000; k++)
-    {
+    while (true) {
         magic.magic = random_uint64() & random_uint64() & random_uint64();
-
-        if (((magic.mask * magic.magic) >> 56).Count() < 6)
+        if (((magic.magic * magic.mask) >> 56).Count() < 6)
             continue;
 
         std::memset(used, 0, sizeof(used));
 
         bool failed = false;
-        for (i = 0; i < (1 << n); i++)
-        {
-            j = getMagicIndex(magic, blockers[i]);
-    
-            if (used[j] == 0)
-                used[j] = attack[i];
-            else if (used[j] != attack[i]) {
+        for (unsigned int i = 0; i < length; i++) {
+            uint64_t index = getMagicIndex(magic, blockers[i]);
+            if (used[index] == 0) {
+                used[index] = attack[i];
+            } else if (used[index] != attack[i]) {
                 failed = true;
                 break;
             }
         }
-        if (!failed)
-            return magic;
+        if (!failed) {
+            break;
+        }
     }
 
-    ASSERT(0)
-    printf("***Failed***\n");
     return magic;
 }
 
