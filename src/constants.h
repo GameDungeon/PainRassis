@@ -20,14 +20,41 @@ const char* const PceChar[] =
     "pnbrqk",
 };
 
-enum Color : uint8_t
+enum Color
 {
     WHITE, 
     BLACK
 };
 
+constexpr Color operator!(Color side) {
+    return Color(1 - side);
+}
+
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
+
+enum Piece : int
+{
+    PAWN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    QUEEN,
+    KING,
+    EMPTY
+};
+
+enum Direction
+{
+    NORTH = 8,
+    WEST = -1,
+    SOUTH = -8,
+    EAST = 1,
+    NORTH_EAST = 9,
+    NORTH_WEST = 7,
+    SOUTH_WEST = -9,
+    SOUTH_EAST = -7
+};
 
 enum Square : int 
 {
@@ -64,19 +91,6 @@ inline Square flipSquare(Square &sq) {
 inline Square operator++(Square &sq) {
     return sq += 1;
 }
-
-
-
-enum Piece : int
-{
-    PAWN,
-    KNIGHT,
-    BISHOP,
-    ROOK,
-    QUEEN,
-    KING,
-    EMPTY
-};
 
 enum { WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8 };
 

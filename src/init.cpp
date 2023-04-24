@@ -43,10 +43,19 @@ void InitFilesRanksBrd() {
 void InitMagicTables() {
 	initBishopMagicTable();
 	initRookMagicTable();
+
+	InitBishopMasks();
+	InitRookMasks();
+}
+
+void InitAttacks() {
+	InitKnightAttacks();
+	InitKingAttacks();
 }
 
 void AllInit() {
 	InitHashKeys();
     InitFilesRanksBrd();
 	InitMagicTables();
+	InitAttacks();
 }

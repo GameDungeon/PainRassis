@@ -5,12 +5,14 @@
 void Board::SetPiece(Piece piece, Square sq, Color color)
 {
     PieceBitBoard[piece].set(sq);
+    AllPieceBitBoard.set(sq);
     SidedBitBoard.setTo(sq, color);
 }
 
 void Board::ClearPiece(Piece piece, Square sq)
 {
     PieceBitBoard[piece].clear(sq);
+    AllPieceBitBoard.clear(sq);
     SidedBitBoard.clear(sq);
 }
 
@@ -19,6 +21,7 @@ void Board::Reset()
     int index = 0;
 
     SidedBitBoard.bb = 0;
+    AllPieceBitBoard.bb = 0;
 
     for(index = 0; index < 6; ++index)
     {

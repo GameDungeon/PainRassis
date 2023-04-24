@@ -41,3 +41,17 @@ char *PrMove(const Move move) {
 
     return MvStr;
 }
+
+void PrintMoveList(const MoveList &list)
+{
+    
+    int index = 0;
+    Move move;
+    printf("Movelist:\n");
+    for(index = 0; index < list.count; ++index)
+    {
+        move = list.moves[index].move;
+        printf("Move: %d > %s\n", index+1, PrMove(move));
+    }
+    printf("MoveList Total %d Moves\n\n", list.count);
+}

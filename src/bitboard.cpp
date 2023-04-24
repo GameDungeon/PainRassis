@@ -4,7 +4,7 @@
 #include <cstring>
 #include <iostream>
 
-void Bitboard::PrintBitBoard() {
+void Bitboard::PrintBitBoard() const {
 
 	Bitboard shiftMe = 1ULL;
 	

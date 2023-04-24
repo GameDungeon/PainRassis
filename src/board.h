@@ -29,12 +29,13 @@ public:
     void PrintBoard();
 
     Bitboard SidedBitBoard;
+    Bitboard AllPieceBitBoard;
     Bitboard PieceBitBoard[6];
     Bitboard SquareAttacked[2];
 
     Square enPas;
 
-    int side;
+    Color side;
     int fiftyMove;
 
     int ply;
@@ -45,4 +46,20 @@ public:
     BoardState history[MAXGAMEHISTORY];
 
     uint64_t posKey;
+
+    template <Color side> inline Bitboard getSideAllPeices() const
+    {
+        if constexpr (side == WHITE)
+            return AllPieceBitBoard & ~SidedBitBoard;
+        else
+            return AllPieceBitBoard & SidedBitBoard;
+    };
+
+    template <Color side, Piece piece> inline Bitboard getSidePeiceType() const
+    {
+        if constexpr (side == WHITE)
+            return PieceBitBoard[piece] & ~SidedBitBoard;
+        else
+            return PieceBitBoard[piece] & SidedBitBoard;
+    };
 };
