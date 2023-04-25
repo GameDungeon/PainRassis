@@ -7,13 +7,15 @@
 #include <nmmintrin.h>
 #endif
 
-typedef struct Bitboard {
+typedef struct Bitboard
+{
 
     uint64_t bb = 0;
 
-    void PrintBitBoard() const;
+    void PrintBitboard() const;
 
-    constexpr Bitboard(uint64_t value) {
+    constexpr Bitboard(uint64_t value)
+    {
         bb = value;
     }
 
@@ -21,19 +23,23 @@ typedef struct Bitboard {
 
     constexpr Bitboard() = default;
 
-    constexpr bool get(Square sq) const {
+    constexpr bool get(Square sq) const
+    {
         return (bb >> sq) & 1;
     }
 
-    constexpr void set(Square sq) {
+    constexpr void set(Square sq)
+    {
         bb |= 1ULL << sq;
     }
 
-    constexpr void clear(Square sq) {
+    constexpr void clear(Square sq)
+    {
         bb &= ~(1ULL << sq);
     }
 
-    constexpr void setTo(Square sq, bool x) {
+    constexpr void setTo(Square sq, bool x)
+    {
         bb ^= (-x ^ bb) & (1ULL << sq);
     }
 
@@ -44,16 +50,18 @@ typedef struct Bitboard {
         return x;
     }
 
-    constexpr int Count() const {
+    constexpr int Count() const
+    {
 
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
-        return (int) _mm_popcnt_u64(bb);
+        return (int)_mm_popcnt_u64(bb);
 #else
         return __builtin_popcountll(bb);
 #endif
     }
 
-    constexpr Square lsb() const {
+    constexpr Square lsb() const
+    {
 
 #ifdef __GNUC__
         return Square(__builtin_ctzll(bb));
@@ -63,86 +71,42 @@ typedef struct Bitboard {
         _BitScanForward64(&a, bb);
         return Square(a);
 #endif
-#else
-#error "Unsupported compiler!"
 #endif
     }
 
-    constexpr Square popLsb() {
+    constexpr Square popLsb()
+    {
         Square square = lsb();
         bb &= bb - 1;
         return square;
     }
 
-    constexpr Bitboard operator*(Bitboard a) const {
-        return bb * a.bb;
-    }
+    constexpr Bitboard operator*(Bitboard a) const{ return bb * a.bb; }
+    constexpr Bitboard operator+(Bitboard a) const{ return bb + a.bb; }
+    constexpr Bitboard operator-(Bitboard a) const{ return bb - a.bb; }
 
-    constexpr bool operator==(Bitboard a) const {
-        return bb == a.bb;
-    }
+    constexpr Bitboard operator&(Bitboard a) const{ return bb & a.bb; }
+    constexpr Bitboard operator|(Bitboard a) const{ return bb | a.bb; }
+    constexpr Bitboard operator^(Bitboard a) const{ return bb ^ a.bb; }
+    constexpr Bitboard operator~() const{ return ~bb; }
 
-    constexpr bool operator!=(Bitboard a) const {
-        return bb != a.bb;
-    }
+    constexpr Bitboard operator<<(const unsigned int a) const{ return bb << a; }
+    constexpr Bitboard operator>>(const unsigned int a) const{ return bb >> a; }
 
-    constexpr Bitboard operator+(Bitboard a) const {
-        return bb + a.bb;
-    }
+    constexpr bool operator==(Bitboard a) const{ return bb == a.bb; }
+    constexpr bool operator!=(Bitboard a) const{ return bb != a.bb; }
 
-    constexpr Bitboard operator-(Bitboard a) const {
-        return bb - a.bb;
-    }
+    constexpr void operator&=(Bitboard a){ bb &= a.bb; }
+    constexpr void operator|=(Bitboard a){ bb |= a.bb; }
+    constexpr void operator^=(Bitboard a){ bb ^= a.bb; }
 
-    constexpr Bitboard operator&(Bitboard a) const {
-        return bb & a.bb;
-    }
+    constexpr void operator<<=(const unsigned int a){ bb <<= a; }
+    constexpr void operator>>=(const unsigned int a){ bb >>= a; }
 
-    constexpr Bitboard operator|(Bitboard a) const {
-        return bb | a.bb;
-    }
+    constexpr explicit operator bool() const{ return bb; }
 
-    constexpr Bitboard operator^(Bitboard a) const {
-        return bb ^ a.bb;
-    }
-
-    constexpr Bitboard operator~() const {
-        return ~bb;
-    }
-
-    constexpr Bitboard operator<<(const unsigned int a) const {
-        return bb << a;
-    }
-
-    constexpr Bitboard operator>>(const unsigned int a) const {
-        return bb >> a;
-    }
-
-    constexpr void operator&=(Bitboard a) {
-        bb &= a.bb;
-    }
-
-    constexpr void operator|=(Bitboard a) {
-        bb |= a.bb;
-    }
-
-    constexpr void operator^=(Bitboard a) {
-        bb ^= a.bb;
-    }
-
-    constexpr void operator<<=(const unsigned int a) {
-        bb <<= a;
-    }
-
-    constexpr void operator>>=(const unsigned int a) {
-        bb >>= a;
-    }
-
-    constexpr explicit operator bool() const {
-        return bb;
-    }
-
-    constexpr explicit operator uint64_t() const {
+    constexpr explicit operator uint64_t() const
+    {
         return bb;
     }
 } Bitboard;
@@ -185,7 +149,8 @@ constexpr Bitboard notRank8 = ~rank8;
 
 constexpr Bitboard edges = rank1 | rank8 | fileA | fileH;
 
-template <Direction direction> constexpr Bitboard shift(const Bitboard b)
+template <Direction direction>
+constexpr Bitboard shift(const Bitboard b)
 {
     switch (direction)
     {

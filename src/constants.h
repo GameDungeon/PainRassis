@@ -72,7 +72,7 @@ inline Square operator+(Square &a, int b) {
     return Square(int(a) + b);
 }
 
-inline Square operator-(Square &a, int b) {
+inline Square operator-(const Square &a, int b) {
     return Square(int(a) - b);
 }
 
@@ -84,12 +84,20 @@ inline Square operator-=(Square &a, int b) {
     return a = a - b;
 }
 
-inline Square flipSquare(Square &sq) {
+inline Square flipSquare(const Square &sq) {
     return Square(int(sq) ^ 56);
 }
 
 inline Square operator++(Square &sq) {
     return sq += 1;
+}
+
+template<Color side>
+inline Square FlipToSide(const Square &sq) {
+    if constexpr(side == WHITE)
+        return sq;
+    else
+        return flipSquare(sq);
 }
 
 enum { WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8 };
