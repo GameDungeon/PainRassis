@@ -144,12 +144,12 @@ Bitboard RookAttack(Square sq, Bitboard blockers)
     return RookAttacks[sq][index];
 }
 
-Bitboard KnightAttack(Square sq)
+inline Bitboard KnightAttack(Square sq)
 {
     return KnightAttacks[sq];
 }
 
-Bitboard KingAttack(Square sq)
+inline Bitboard KingAttack(Square sq)
 {
     return KingAttacks[sq];
 }

@@ -1,20 +1,305 @@
 #include "constants.h"
 #include "board.h"
 #include "utils.h"
+#include "move.h"
+#include "io.h"
+#include "attacks.h"
+
+const int CastlePerm[64] = {
+    13, 15, 15, 15, 12, 15, 15, 14,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+     7, 15, 15, 15,  3, 15, 15, 11,
+};
+
+// Remove this. This double define is cursed, and shouldn't exist
+template <Piece pieceType>
+Bitboard GetPieceMask(Bitboard blockers, Square sq)
+{
+    if constexpr (pieceType == KNIGHT)
+        return KnightAttacks[sq];
+    else if constexpr (pieceType == BISHOP)
+        return BishopAttack(sq, blockers);
+    else if constexpr (pieceType == ROOK)
+        return RookAttack(sq, blockers);
+    else if constexpr (pieceType == QUEEN)
+        return BishopAttack(sq, blockers) ||
+               RookAttack(sq, blockers);
+    else if constexpr (pieceType == KING)
+        return KingAttacks[sq];
+}
 
 void Board::SetPiece(Piece piece, Square sq, Color color)
 {
+    posKey ^= PieceKeys[color][piece][sq];
+
     PieceBitboard[piece].set(sq);
     AllPieceBitboard.set(sq);
     BlackBitboard.setTo(sq, color);
 }
 
+template <Color color>
+void Board::SetPiece(Piece piece, Square sq)
+{
+    posKey ^= PieceKeys[color][piece][sq];
+
+    PieceBitboard[piece].set(sq);
+    AllPieceBitboard.set(sq);
+
+    if constexpr(color == BLACK)
+        BlackBitboard.set(sq);
+    else 
+        BlackBitboard.clear(sq);
+}
+
 void Board::ClearPiece(Piece piece, Square sq)
 {
+    Color color = BlackBitboard.getColor(sq);
+
     PieceBitboard[piece].clear(sq);
     AllPieceBitboard.clear(sq);
     BlackBitboard.clear(sq);
+
+    posKey ^= PieceKeys[color][piece][sq];
 }
+
+void Board::ClearSquare(Square sq)
+{
+    Piece piece = GetPieceBySq(sq);
+
+    ASSERT(piece != EMPTY)
+    
+    ClearPiece(piece, sq);
+}
+
+void Board::MovePiece(const Square from, const Square to) {
+
+    PrintBoard();
+    printf("%s\n", PrSq(from));
+    printf("%s\n", PrSq(to));
+
+	Piece piece = GetPieceBySq(from);	
+    Color color = BlackBitboard.getColor(from);
+
+    ASSERT(piece != EMPTY)
+
+    ClearSquare(from);
+    SetPiece(piece, to, color);
+}
+
+template<Piece piece, Color color>
+void Board::ControlledSquaresByPiece()
+{
+    Bitboard pce = getSidePeiceType<color, piece>();
+    while(pce) {
+        Square sq = pce.popLsb();
+        ControlledSquares[color] |= GetPieceMask<piece>(AllPieceBitboard, sq);
+    }
+}
+
+template<Color color>
+void Board::GenerateControlledSquares()
+{
+    constexpr Direction UP = color == WHITE ? NORTH : SOUTH;
+
+    Bitboard pawns = shift<UP>(getSidePeiceType<color, PAWN>());
+    Bitboard leftPawnAttack = shift<WEST>(pawns);
+    Bitboard rightPawnAttack = shift<EAST>(pawns);
+
+    ControlledSquares[color] = leftPawnAttack | rightPawnAttack;
+
+    ControlledSquaresByPiece<KNIGHT, color>();
+    ControlledSquaresByPiece<BISHOP, color>();
+    ControlledSquaresByPiece<ROOK, color>();
+    ControlledSquaresByPiece<QUEEN, color>();
+    ControlledSquaresByPiece<KING, color>();
+
+    ControlledSquares[color] |= getSideAllPeices<color>();
+}
+
+void Board::GenerateControlledSquares()
+{
+    GenerateControlledSquares<WHITE>();
+    GenerateControlledSquares<BLACK>();
+}
+
+bool Board::MakeMove(Move move) {
+	history[hisPly].posKey = posKey;
+	
+	if(move.EnPassant) {
+        if(side == WHITE) {
+            ASSERT(GetPieceBySq(Square(move.To+SOUTH)) != EMPTY)
+            ClearSquare(Square(move.To+SOUTH));
+        } else {
+            ASSERT(GetPieceBySq(Square(move.To+NORTH)) != EMPTY)
+            ClearSquare(Square(move.To+NORTH));
+        }
+    } else if (move.Castle) {
+        switch(move.To) {
+            case C1:
+                MovePiece(A1, D1);
+			break;
+            case C8:
+                MovePiece(A8, D8);
+			break;
+            case G1:
+                MovePiece(H1, F1);
+			break;
+            case G8:
+                MovePiece(H8, F8);
+			break;
+            default: ASSERT(false); break;
+        }
+    }	
+	
+	if(enPas != NO_SQ) posKey ^= PieceKeys[WHITE][EMPTY][enPas];
+    posKey ^= CastleKeys[castlePerm];
+	
+	history[hisPly].move = move;
+    history[hisPly].fiftyMove = fiftyMove;
+    history[hisPly].enPas = enPas;
+    history[hisPly].castlePerm = castlePerm;
+
+    castlePerm &= CastlePerm[move.From];
+    castlePerm &= CastlePerm[move.To];
+    enPas = NO_SQ;
+
+	posKey ^= (CastleKeys[(castlePerm)]);
+	
+    fiftyMove++;
+	
+	if(move.Capture != EMPTY) {
+        ASSERT(GetPieceBySq(move.To) != EMPTY)
+        ClearSquare(move.To);
+        fiftyMove = 0;
+    }
+	
+	hisPly++;
+	ply++;
+	
+	if(PieceBitboard[PAWN].get(move.From)) {
+        fiftyMove = 0;
+        if(move.PawnStart) {
+            if(side==WHITE) {
+                enPas = move.From + NORTH;
+                
+                PrintBoard();
+                printf("%s\n", PrSq(move.From));
+                printf("%s\n", PrSq(move.To));
+                printf("%s\n", PrSq(enPas));
+                
+                ASSERT(RanksBrd[enPas]==RANK_3);
+            } else {
+                enPas = move.From + SOUTH;
+                ASSERT(RanksBrd[enPas]==RANK_6);
+            }
+            posKey ^= PieceKeys[WHITE][EMPTY][(enPas)];
+        }
+    }
+	
+	MovePiece(move.From, move.To);
+	
+    if(move.PromotedTo != EMPTY)   {
+        ASSERT(GetPieceBySq(move.To) != EMPTY)
+        ClearSquare(move.To);
+        SetPiece(move.PromotedTo, move.To, side);
+    }
+	
+	side ^= 1;
+    posKey ^= SideKey;
+
+    GenerateControlledSquares();
+		
+    if(getSidePeiceType(!side, KING) & ControlledSquares[side])
+    {
+        TakeMove();
+        return false;
+    }
+
+    if(move.Castle) {
+        bool attacked = false;
+        switch(move.To) {
+            case C1:
+                attacked = ControlledSquares[side].get(E1) || 
+                    ControlledSquares[side].get(D1);
+			break;
+            case C8:
+                attacked = ControlledSquares[side].get(E8) || 
+                    ControlledSquares[side].get(D8);
+			break;
+            case G1:
+                attacked = ControlledSquares[side].get(E1) || 
+                    ControlledSquares[side].get(F1);
+			break;
+            case G8:
+                attacked = ControlledSquares[side].get(E8) || 
+                    ControlledSquares[side].get(F8);
+			break;
+            default: ASSERT(false); break;
+        }
+
+        if(attacked) {
+            TakeMove();
+            return false;
+        }
+    }
+	
+	return true;
+	
+}
+
+void Board::TakeMove() {
+	hisPly--;
+    ply--;
+	
+    Move move = history[hisPly].move;
+	
+	if(enPas != NO_SQ) posKey ^= PieceKeys[WHITE][EMPTY][enPas];
+    posKey ^= (CastleKeys[(castlePerm)]);
+
+    castlePerm = history[hisPly].castlePerm;
+    fiftyMove = history[hisPly].fiftyMove;
+    enPas = history[hisPly].enPas;
+
+    if(enPas != NO_SQ) posKey ^= PieceKeys[WHITE][EMPTY][(enPas)];
+    posKey ^= (CastleKeys[(castlePerm)]);
+
+    side ^= 1;
+    posKey ^= PieceKeys[WHITE][EMPTY][(enPas)];
+	
+	if(move.EnPassant) {
+        if(side == WHITE) {
+            SetPiece(PAWN, move.To+SOUTH, WHITE);
+        } else {
+            SetPiece(PAWN, move.To+NORTH, BLACK);
+        }
+    } else if(move.Castle) {
+        switch(move.To) {
+            case C1: MovePiece(D1, A1); break;
+            case C8: MovePiece(D8, A8); break;
+            case G1: MovePiece(F1, H1); break;
+            case G8: MovePiece(F8, H8); break;
+            default: ASSERT(false); break;
+        }
+    }
+	
+	MovePiece(move.To, move.From);
+	
+    if(move.Capture != EMPTY) {
+        SetPiece(move.Capture, move.To, side);
+    }
+	
+	if(move.PromotedTo != EMPTY)   {
+        ASSERT(GetPieceBySq(move.To) != EMPTY)
+        ClearSquare(move.From);
+        SetPiece(PAWN, move.From, BlackBitboard.getColor(move.From));
+    }
+}
+
 
 void Board::Reset()
 {
@@ -27,6 +312,9 @@ void Board::Reset()
     {
         PieceBitboard[index].bb = 0;
     }
+
+    ControlledSquares[WHITE] = 0;
+    ControlledSquares[BLACK] = 0;
 
     side = WHITE;
     enPas = NO_SQ;
@@ -43,7 +331,7 @@ void Board::Reset()
 uint64_t Board::GeneratePosKey()
 {
 
-    int sq = 0;
+    Square sq;
     uint64_t finalKey = 0;
 
     // pieces
@@ -53,7 +341,8 @@ uint64_t Board::GeneratePosKey()
         while (pieces.bb != 0)
         {
             sq = pieces.popLsb();
-            finalKey ^= PieceKeys[pieceType + 6 * BlackBitboard.get(Square(sq))][sq];
+            Color color = BlackBitboard.getColor(sq);
+            finalKey ^= PieceKeys[color][pieceType + 6 * BlackBitboard.get(Square(sq))][sq];
         }
     }
 
@@ -66,7 +355,7 @@ uint64_t Board::GeneratePosKey()
     {
         ASSERT(enPas >= 0 && enPas < 64);
         ASSERT(RanksBrd[enPas] == RANK_3 || RanksBrd[enPas] == RANK_6);
-        finalKey ^= PieceKeys[EMPTY][enPas];
+        finalKey ^= PieceKeys[WHITE][EMPTY][enPas];
     }
 
     ASSERT(castlePerm >= 0 && castlePerm <= 15);
@@ -89,7 +378,7 @@ bool Board::ParseFen(const std::string &fen)
 
     Reset();
 
-    while (rank >= RANK_1 && index <= fen.length())
+    while (rank >= RANK_1 && index <= int(fen.length()))
     {
         count = 1;
         char peiceChar = fen[index];
@@ -230,8 +519,7 @@ bool Board::ParseFen(const std::string &fen)
     return 0;
 }
 
-Piece Board::GetPieceBySq(Square sq)
-{
+Piece Board::GetPieceBySq(Square sq) const {
     for (int i = 0; i < 6; ++i)
     {
         if (PieceBitboard[i].get(sq))
@@ -245,7 +533,7 @@ void Board::PrintBoard()
 
     int file, rank, piece;
     Square sq;
-    Color side;
+    Color color;
 
     printf("\nGame Board:\n\n");
 
@@ -262,9 +550,9 @@ void Board::PrintBoard()
                 printf("  .");
                 continue;
             }
-            side = Color(BlackBitboard.get(sq));
+            color = Color(BlackBitboard.get(sq));
 
-            printf("%3c", PceChar[side][piece]);
+            printf("%3c", PceChar[color][piece]);
         }
         printf("\n");
     }
@@ -276,7 +564,7 @@ void Board::PrintBoard()
     }
     printf("\n");
     printf("side:%c\n", SideChar[side]);
-    printf("enPas:%d\n", enPas);
+    printf("enPas:%s\n", PrSq(enPas));
     printf("castle:%c%c%c%c\n",
            castlePerm & WKCA ? 'K' : '-',
            castlePerm & WQCA ? 'Q' : '-',

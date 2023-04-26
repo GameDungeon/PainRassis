@@ -4,6 +4,10 @@
 
 char *PrSq(const int sq) {
 
+    if(sq == NO_SQ) {
+        return (char*)"None";
+    }
+
     static char SqStr[3];
 
     int file = FilesBrd[sq];

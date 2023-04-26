@@ -3,7 +3,7 @@
 #include "attacks.h"
 #include "magics.h"
 
-uint64_t PieceKeys[12][64];
+uint64_t PieceKeys[2][12][64];
 uint64_t SideKey;
 uint64_t CastleKeys[16];
 
@@ -13,11 +13,26 @@ int RanksBrd[64];
 void InitHashKeys() {
 	int index = 0;
 	int index2 = 0;
-	for(index = 0; index < 12; ++index) {
-		for(index2 = 0; index2 < 64; ++index2) {
-			PieceKeys[index][index2] = random_uint64();
+
+	uint64_t emtpyKey = random_uint64();
+
+	for(index2 = 0; index2 < 64; ++index2) {
+		for(index = 0; index < 5; ++index) {
+			PieceKeys[WHITE][index][index2] = random_uint64();
 		}
+		PieceKeys[WHITE][EMPTY][index2] = emtpyKey;
 	}
+
+	index2 = 0;
+
+	for(index2 = 0; index2 < 64; ++index2) {
+		for(index = 0; index < 5; ++index) {
+			PieceKeys[BLACK][index][index2] = random_uint64();
+		}
+		PieceKeys[BLACK][EMPTY][index2] = emtpyKey;
+	}
+
+
 	SideKey = random_uint64();
 	for(index = 0; index < 16; ++index) {
 		CastleKeys[index] = random_uint64();
@@ -26,7 +41,6 @@ void InitHashKeys() {
 }
 
 void InitFilesRanksBrd() {
-	int index = 0;
 	int file = FILE_A;
 	int rank = RANK_1;
 	int sq = A1;

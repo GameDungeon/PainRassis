@@ -28,6 +28,11 @@ typedef struct Bitboard
         return (bb >> sq) & 1;
     }
 
+    constexpr Color getColor(Square sq) const
+    {
+        return static_cast<Color>((bb >> sq) & 1);
+    }
+
     constexpr void set(Square sq)
     {
         bb |= 1ULL << sq;

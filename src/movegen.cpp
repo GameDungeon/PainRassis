@@ -1,11 +1,12 @@
 #include "constants.h"
+#include "movegen.h"
 #include "bitboard.h"
 #include "board.h"
 #include "move.h"
 #include "attacks.h"
 
 template <Color side>
-void GeneratePawnMoves(const Board &board, MoveList &list)
+static void GeneratePawnMoves(const Board &board, MoveList &list)
 {
     constexpr Direction UP = side == WHITE ? NORTH : SOUTH;
     constexpr Direction DOWN = side == BLACK ? NORTH : SOUTH;
@@ -42,13 +43,15 @@ void GeneratePawnMoves(const Board &board, MoveList &list)
     while (leftAttack)
     {
         Square to = leftAttack.popLsb();
-        list.AddMove(GetCaptureMove(to + DOWN_LEFT, to));
+        Piece pce = board.GetPieceBySq(to);
+        list.AddMove(GetMove(to + DOWN_LEFT, to, pce));
     }
 
     while (rightAttack)
     {
         Square to = rightAttack.popLsb();
-        list.AddMove(GetCaptureMove(to + DOWN_RIGHT, to));
+        Piece pce = board.GetPieceBySq(to);
+        list.AddMove(GetMove(to + DOWN_RIGHT, to, pce));
     }
 
     if (pawns & promoRank)
@@ -69,19 +72,21 @@ void GeneratePawnMoves(const Board &board, MoveList &list)
         while (promoteLeftAttack)
         {
             Square to = promoteLeftAttack.popLsb();
-            list.AddMove(GetCaptureMove(to + DOWN_LEFT, to, BISHOP));
-            list.AddMove(GetCaptureMove(to + DOWN_LEFT, to, KNIGHT));
-            list.AddMove(GetCaptureMove(to + DOWN_LEFT, to, ROOK));
-            list.AddMove(GetCaptureMove(to + DOWN_LEFT, to, QUEEN));
+            Piece pce = board.GetPieceBySq(to);
+            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, BISHOP));
+            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, KNIGHT));
+            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, ROOK));
+            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, QUEEN));
         }
 
         while (promoteRightAttack)
         {
             Square to = promoteRightAttack.popLsb();
-            list.AddMove(GetCaptureMove(to + DOWN_RIGHT, to, BISHOP));
-            list.AddMove(GetCaptureMove(to + DOWN_RIGHT, to, KNIGHT));
-            list.AddMove(GetCaptureMove(to + DOWN_RIGHT, to, ROOK));
-            list.AddMove(GetCaptureMove(to + DOWN_RIGHT, to, QUEEN));
+            Piece pce = board.GetPieceBySq(to);
+            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, BISHOP));
+            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, KNIGHT));
+            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, ROOK));
+            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, QUEEN));
         }
     }
 
@@ -92,34 +97,34 @@ void GeneratePawnMoves(const Board &board, MoveList &list)
 
         if (pawns.get(attackingPawnLeft))
         {
-            list.AddMove(GetCaptureMove(attackingPawnLeft, board.enPas, true));
+            list.AddMove(GetEnPassantMove(attackingPawnLeft, board.enPas));
         }
 
         if (pawns.get(attackingPawnRight))
         {
-            list.AddMove(GetCaptureMove(attackingPawnRight, board.enPas, true));
+            list.AddMove(GetEnPassantMove(attackingPawnRight, board.enPas));
         }
     }
 }
 
 template <Piece pieceType>
-Bitboard GetPieceMask(const Board &board, Square sq)
+Bitboard GetPieceMask(Bitboard blockers, Square sq)
 {
     if constexpr (pieceType == KNIGHT)
         return KnightAttacks[sq];
     else if constexpr (pieceType == BISHOP)
-        return BishopAttack(sq, board.AllPieceBitboard);
+        return BishopAttack(sq, blockers);
     else if constexpr (pieceType == ROOK)
-        return RookAttack(sq, board.AllPieceBitboard);
+        return RookAttack(sq, blockers);
     else if constexpr (pieceType == QUEEN)
-        return BishopAttack(sq, board.AllPieceBitboard) ||
-               RookAttack(sq, board.AllPieceBitboard);
+        return BishopAttack(sq, blockers) ||
+               RookAttack(sq, blockers);
     else if constexpr (pieceType == KING)
         return KingAttacks[sq];
 }
 
 template <Color side, Piece pieceType>
-void GeneratePieceMoves(const Board &board, MoveList &list)
+static void GeneratePieceMoves(const Board &board, MoveList &list)
 {
     Bitboard allPieces = board.AllPieceBitboard;
     Bitboard empty = ~allPieces;
@@ -130,7 +135,7 @@ void GeneratePieceMoves(const Board &board, MoveList &list)
     while (piece)
     {
         Square sq = piece.popLsb();
-        Bitboard pieceMask = GetPieceMask<pieceType>(board, sq) & ~ally;
+        Bitboard pieceMask = GetPieceMask<pieceType>(allPieces, sq) & ~ally;
         Bitboard quite = pieceMask & empty;
         Bitboard captures = pieceMask & enemy;
 
@@ -141,7 +146,8 @@ void GeneratePieceMoves(const Board &board, MoveList &list)
 
         while (captures)
         {
-            list.AddMove(GetCaptureMove(sq, captures.popLsb()));
+            Piece pce = board.GetPieceBySq(sq);
+            list.AddMove(GetMove(sq, captures.popLsb(), pce));
         }
     }
 }

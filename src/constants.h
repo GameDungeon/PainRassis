@@ -20,15 +20,24 @@ const char* const PceChar[] =
     "pnbrqk",
 };
 
-enum Color
+enum Color : bool
 {
     WHITE, 
     BLACK
 };
 
-constexpr Color operator!(Color side) {
-    return Color(1 - side);
+constexpr Color operator!(const Color &side) {
+    return Color(side ^ 1);
 }
+
+constexpr Color operator^(const Color &a, int b) {
+    return Color(bool(a) ^ b);
+}
+
+constexpr Color operator^=(Color &a, int b) {
+    return a = Color(bool(a) ^ b);
+}
+
 
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
@@ -56,7 +65,7 @@ enum Direction
     SOUTH_EAST = -7
 };
 
-enum Square : int 
+enum Square : unsigned short
 {
   A1, B1, C1, D1, E1, F1, G1, H1,
   A2, B2, C2, D2, E2, F2, G2, H2,
@@ -68,7 +77,7 @@ enum Square : int
   A8, B8, C8, D8, E8, F8, G8, H8, NO_SQ
 };
 
-inline Square operator+(Square &a, int b) {
+inline Square operator+(const Square &a, int b) {
     return Square(int(a) + b);
 }
 

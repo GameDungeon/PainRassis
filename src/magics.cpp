@@ -79,7 +79,9 @@ Magic findMagic(Square sq, bool bishop, Bitboard mask)
         if (((magic.magic * magic.mask) >> 56).Count() < 6)
             continue;
 
-        std::memset(used, 0, sizeof(used));
+        for (int i = 0; i < 4096; ++i) {
+            used[i] = 0;
+        }
 
         bool failed = false;
         for (unsigned int i = 0; i < length; i++) {
