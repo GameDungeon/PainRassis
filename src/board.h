@@ -5,7 +5,7 @@
 #include "move.h"
 #include <string>
 
-typedef struct
+struct BoardState
 {
     Square enPas;
 
@@ -14,7 +14,7 @@ typedef struct
     int fiftyMove;
 
     uint64_t posKey;
-} BoardState;
+};
 
 class Board
 {

@@ -2,7 +2,7 @@
 
 #include "constants.h"
 
-typedef struct {
+struct Move {
    Square From : 7;
    Square To : 7;
    Piece Capture : 4;
@@ -10,21 +10,19 @@ typedef struct {
    bool EnPassant : 1;
    bool Castle : 1;
    bool PawnStart : 1;
-} Move;
+};
 
-typedef struct
-{
+struct MoveData {
     Move move;
     int score;
-} MoveData;
+};
 
-typedef struct
-{
+struct MoveList {
     MoveData moves[256];
-    int count;
+    int count = 0;
 
     void AddMove(Move move);
-} MoveList;
+};
 
 Move GetMove(Square from, Square to);
 Move GetMove(Square from, Square to, bool castle, bool pawnStart);

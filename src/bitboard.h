@@ -7,7 +7,7 @@
 #include <nmmintrin.h>
 #endif
 
-typedef struct Bitboard
+struct Bitboard
 {
 
     uint64_t bb = 0;
@@ -114,7 +114,7 @@ typedef struct Bitboard
     {
         return bb;
     }
-} Bitboard;
+};
 
 constexpr Bitboard fileA = 0x101010101010101ULL;
 constexpr Bitboard fileB = fileA << 1;

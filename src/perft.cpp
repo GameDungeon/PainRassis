@@ -23,6 +23,12 @@ void Perft(int depth, Board board) {
       
     int MoveNum = 0;
 	for(MoveNum = 0; MoveNum < list.count; ++MoveNum) {	
+
+        printf("%d\n", MoveNum);
+
+        if(list.moves[MoveNum].move.To == C1) {
+            board.PrintBoard();
+        }
        
         if ( !board.MakeMove(list.moves[MoveNum].move)) {
             continue;
@@ -34,10 +40,9 @@ void Perft(int depth, Board board) {
     return;
 }
 
-
 void PerftTest(int depth, Board board) {
 	board.PrintBoard();
-	printf("\nStarting Test To Depth:%d\n",depth);	
+	printf("\nStarting Test To Depth: %d\n",depth);	
 	leafNodes = 0;
 	int start = GetTimeMs();
     MoveList list;

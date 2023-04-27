@@ -77,13 +77,15 @@ void Board::ClearSquare(Square sq)
 }
 
 void Board::MovePiece(const Square from, const Square to) {
-
-    PrintBoard();
-    printf("%s\n", PrSq(from));
-    printf("%s\n", PrSq(to));
-
+    
 	Piece piece = GetPieceBySq(from);	
     Color color = BlackBitboard.getColor(from);
+
+    if(piece == EMPTY) {
+        PrintBoard();
+        printf("%s\n", PrSq(from));
+        printf("%s\n", PrSq(to));
+    }
 
     ASSERT(piece != EMPTY)
 
@@ -187,10 +189,12 @@ bool Board::MakeMove(Move move) {
             if(side==WHITE) {
                 enPas = move.From + NORTH;
                 
-                PrintBoard();
-                printf("%s\n", PrSq(move.From));
-                printf("%s\n", PrSq(move.To));
-                printf("%s\n", PrSq(enPas));
+                if(RanksBrd[enPas]!=RANK_3) {
+                    PrintBoard();
+                    printf("%s\n", PrSq(move.From));
+                    printf("%s\n", PrSq(move.To));
+                    printf("%s\n", PrSq(enPas));
+                }
                 
                 ASSERT(RanksBrd[enPas]==RANK_3);
             } else {
@@ -200,8 +204,9 @@ bool Board::MakeMove(Move move) {
             posKey ^= PieceKeys[WHITE][EMPTY][(enPas)];
         }
     }
-	
+	//printf("Make: %s, EnPas: %s\n", PrMove(move), PrSq(enPas));
 	MovePiece(move.From, move.To);
+    //printf("Made Move\n");
 	
     if(move.PromotedTo != EMPTY)   {
         ASSERT(GetPieceBySq(move.To) != EMPTY)
@@ -286,7 +291,7 @@ void Board::TakeMove() {
             default: ASSERT(false); break;
         }
     }
-	
+	printf("Unmake: %s\n", PrMove(move));
 	MovePiece(move.To, move.From);
 	
     if(move.Capture != EMPTY) {

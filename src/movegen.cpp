@@ -185,6 +185,7 @@ MoveList GenerateAllMoves(const Board &board, MoveList &list)
 
 MoveList GenerateAllMoves(const Board &board, MoveList &list)
 {
+    printf("Movelist Start: %d\n", list.count);
     if (board.side == WHITE)
         return GenerateAllMoves<WHITE>(board, list);
     else
