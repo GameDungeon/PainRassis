@@ -18,8 +18,8 @@ struct MoveData {
 };
 
 struct MoveList {
-    MoveData moves[256];
-    int count;
+    MoveData moves[256] = {};
+    int count = 0;
 
     void AddMove(Move move);
 };

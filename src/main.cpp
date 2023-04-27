@@ -24,7 +24,7 @@ int main()
 
     board.ParseFen(STARTING_FEN);
 
-    PerftTest(2, board); // KNIGHT?
+    PerftTest(3, board); // KNIGHT?
 
     return 0;
 }

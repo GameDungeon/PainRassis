@@ -10,15 +10,13 @@ static void GeneratePawnMoves(const Board &board, MoveList &list)
 {
     constexpr Direction UP = side == WHITE ? NORTH : SOUTH;
     constexpr Direction DOWN = side == BLACK ? NORTH : SOUTH;
-    constexpr Direction DOWN_LEFT = side == BLACK ? NORTH_EAST : SOUTH_WEST;
-    constexpr Direction DOWN_RIGHT = side == BLACK ? NORTH_WEST : SOUTH_EAST;
 
     constexpr Bitboard promoRank = side == WHITE ? rank7 : rank2;
     constexpr Bitboard doublePushRank = side == WHITE ? rank3 : rank6;
 
     Bitboard empty = ~board.AllPieceBitboard;
-    Bitboard pawns = board.getSidePeiceType<side, PAWN>();
-    Bitboard enemy = board.getSideAllPeices<!side>();
+    Bitboard pawns = board.getSidePieceType<side, PAWN>();
+    Bitboard enemy = board.getSideAllPieces<!side>();
 
     Bitboard upOne = shift<UP>(pawns);
 
@@ -44,14 +42,14 @@ static void GeneratePawnMoves(const Board &board, MoveList &list)
     {
         Square to = leftAttack.popLsb();
         Piece pce = board.GetPieceBySq(to);
-        list.AddMove(GetMove(to + DOWN_LEFT, to, pce));
+        list.AddMove(GetMove(to + DOWN + EAST, to, pce));
     }
 
     while (rightAttack)
     {
         Square to = rightAttack.popLsb();
         Piece pce = board.GetPieceBySq(to);
-        list.AddMove(GetMove(to + DOWN_RIGHT, to, pce));
+        list.AddMove(GetMove(to + DOWN + WEST, to, pce));
     }
 
     if (pawns & promoRank)
@@ -73,27 +71,27 @@ static void GeneratePawnMoves(const Board &board, MoveList &list)
         {
             Square to = promoteLeftAttack.popLsb();
             Piece pce = board.GetPieceBySq(to);
-            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, BISHOP));
-            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, KNIGHT));
-            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, ROOK));
-            list.AddMove(GetMove(to + DOWN_LEFT, to, pce, QUEEN));
+            list.AddMove(GetMove(to + DOWN + EAST, to, pce, BISHOP));
+            list.AddMove(GetMove(to + DOWN + EAST, to, pce, KNIGHT));
+            list.AddMove(GetMove(to + DOWN + EAST, to, pce, ROOK));
+            list.AddMove(GetMove(to + DOWN + EAST, to, pce, QUEEN));
         }
 
         while (promoteRightAttack)
         {
             Square to = promoteRightAttack.popLsb();
             Piece pce = board.GetPieceBySq(to);
-            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, BISHOP));
-            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, KNIGHT));
-            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, ROOK));
-            list.AddMove(GetMove(to + DOWN_RIGHT, to, pce, QUEEN));
+            list.AddMove(GetMove(to + DOWN + WEST, to, pce, BISHOP));
+            list.AddMove(GetMove(to + DOWN + WEST, to, pce, KNIGHT));
+            list.AddMove(GetMove(to + DOWN + WEST, to, pce, ROOK));
+            list.AddMove(GetMove(to + DOWN + WEST, to, pce, QUEEN));
         }
     }
 
     if (board.enPas != NO_SQ)
     {
-        Square attackingPawnLeft = Square(board.enPas + int(DOWN_LEFT));
-        Square attackingPawnRight = Square(board.enPas + int(DOWN_RIGHT));
+        Square attackingPawnLeft = Square(board.enPas + int(DOWN + WEST));
+        Square attackingPawnRight = Square(board.enPas + int(DOWN + EAST));
 
         if (pawns.get(attackingPawnLeft))
         {
@@ -117,7 +115,7 @@ Bitboard GetPieceMask(Bitboard blockers, Square sq)
     else if constexpr (pieceType == ROOK)
         return RookAttack(sq, blockers);
     else if constexpr (pieceType == QUEEN)
-        return BishopAttack(sq, blockers) ||
+        return BishopAttack(sq, blockers) |
                RookAttack(sq, blockers);
     else if constexpr (pieceType == KING)
         return KingAttacks[sq];
@@ -128,10 +126,10 @@ static void GeneratePieceMoves(const Board &board, MoveList &list)
 {
     Bitboard allPieces = board.AllPieceBitboard;
     Bitboard empty = ~allPieces;
-    Bitboard enemy = board.getSideAllPeices<!side>();
-    Bitboard ally = board.getSideAllPeices<side>();
+    Bitboard enemy = board.getSideAllPieces<!side>();
+    Bitboard ally = board.getSideAllPieces<side>();
 
-    Bitboard piece = board.getSidePeiceType<side, pieceType>();
+    Bitboard piece = board.getSidePieceType<side, pieceType>();
     while (piece)
     {
         Square sq = piece.popLsb();
@@ -146,8 +144,9 @@ static void GeneratePieceMoves(const Board &board, MoveList &list)
 
         while (captures)
         {
-            Piece pce = board.GetPieceBySq(sq);
-            list.AddMove(GetMove(sq, captures.popLsb(), pce));
+            const auto to = captures.popLsb();
+            const auto captured = board.GetPieceBySq(to);
+            list.AddMove(GetMove(sq, to, captured));
         }
     }
 }
@@ -165,17 +164,21 @@ MoveList GenerateAllMoves(const Board &board, MoveList &list)
     GeneratePieceMoves<side, QUEEN>(board, list);
     GeneratePieceMoves<side, KING>(board, list);
 
-    if(board.castlePerm & kingCastle) {
-        if (!(board.AllPieceBitboard.get(FlipToSide<side>(F1)) || 
-              board.AllPieceBitboard.get(FlipToSide<side>(G1)))) {
+    if (board.castlePerm & kingCastle)
+    {
+        if (!(board.AllPieceBitboard.get(FlipToSide<side>(F1)) ||
+              board.AllPieceBitboard.get(FlipToSide<side>(G1))))
+        {
             list.AddMove(GetMove(FlipToSide<side>(E1), FlipToSide<side>(G1), true, false));
         }
     }
 
-    if(board.castlePerm & queenCastle) {
-        if(!(board.AllPieceBitboard.get(FlipToSide<side>(B1)) || 
-             board.AllPieceBitboard.get(FlipToSide<side>(C1)) || 
-             board.AllPieceBitboard.get(FlipToSide<side>(D1)))) {
+    if (board.castlePerm & queenCastle)
+    {
+        if (!(board.AllPieceBitboard.get(FlipToSide<side>(B1)) ||
+              board.AllPieceBitboard.get(FlipToSide<side>(C1)) ||
+              board.AllPieceBitboard.get(FlipToSide<side>(D1))))
+        {
             list.AddMove(GetMove(FlipToSide<side>(E1), FlipToSide<side>(C1), true, false));
         }
     }
@@ -185,7 +188,6 @@ MoveList GenerateAllMoves(const Board &board, MoveList &list)
 
 MoveList GenerateAllMoves(const Board &board, MoveList &list)
 {
-    printf("Movelist Start: %d\n", list.count);
     if (board.side == WHITE)
         return GenerateAllMoves<WHITE>(board, list);
     else

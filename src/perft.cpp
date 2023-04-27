@@ -24,11 +24,7 @@ void Perft(int depth, Board board) {
     int MoveNum = 0;
 	for(MoveNum = 0; MoveNum < list.count; ++MoveNum) {	
 
-        printf("%d\n", MoveNum);
-
-        if(list.moves[MoveNum].move.To == C1) {
-            board.PrintBoard();
-        }
+        //printf("%d\n", MoveNum);
        
         if ( !board.MakeMove(list.moves[MoveNum].move)) {
             continue;

@@ -37,14 +37,14 @@ public:
     void TakeMove();
 
     void PrintBoard();
-    template<Color color>
+    template <Color color>
     void GenerateControlledSquares();
     void GenerateControlledSquares();
 
     // Yes I know this is non standard.
     // At this point I embrace that.
     Bitboard BlackBitboard;    // A board of black piece locations for getting color.
-    Bitboard AllPieceBitboard; // All peice locations
+    Bitboard AllPieceBitboard; // All piece locations
     Bitboard PieceBitboard[6]; // Locations by piece type.
 
     Bitboard ControlledSquares[2];
@@ -64,7 +64,7 @@ public:
     uint64_t posKey;
 
     template <Color color>
-    inline Bitboard getSideAllPeices() const
+    inline Bitboard getSideAllPieces() const
     {
         if constexpr (color == WHITE)
             return AllPieceBitboard & ~BlackBitboard;
@@ -73,7 +73,7 @@ public:
     };
 
     template <Color color, Piece piece>
-    inline Bitboard getSidePeiceType() const
+    inline Bitboard getSidePieceType() const
     {
         if constexpr (color == WHITE)
             return PieceBitboard[piece] & ~BlackBitboard;
@@ -81,14 +81,15 @@ public:
             return PieceBitboard[piece] & BlackBitboard;
     };
 
-    inline Bitboard getSidePeiceType(Color color, Piece piece) const
+    inline Bitboard getSidePieceType(Color color, Piece piece) const
     {
-        if(color == WHITE)
+        if (color == WHITE)
             return PieceBitboard[piece] & ~BlackBitboard;
         else
             return PieceBitboard[piece] & BlackBitboard;
     };
+
 private:
-    template<Piece piece, Color color>
+    template <Piece piece, Color color>
     void ControlledSquaresByPiece();
 };
