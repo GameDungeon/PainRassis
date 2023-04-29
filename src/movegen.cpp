@@ -5,13 +5,15 @@
 #include "move.h"
 #include "attacks.h"
 
+#include <stdexcept>
+
 template <Color side>
 static void GeneratePawnMoves(const Board &board, MoveList &list)
 {
     constexpr Direction UP = side == WHITE ? NORTH : SOUTH;
     constexpr Direction DOWN = side == BLACK ? NORTH : SOUTH;
 
-    constexpr Bitboard promoRank = side == WHITE ? rank7 : rank2;
+    constexpr Bitboard promoRank = side == WHITE ? rank8 : rank1;
     constexpr Bitboard doublePushRank = side == WHITE ? rank3 : rank6;
 
     Bitboard empty = ~board.AllPieceBitboard;
@@ -52,19 +54,19 @@ static void GeneratePawnMoves(const Board &board, MoveList &list)
         list.AddMove(GetMove(to + DOWN + WEST, to, pce));
     }
 
-    if (pawns & promoRank)
+    if (upOne & promoRank)
     {
-        Bitboard promoteSinglePush = singlePush & promoRank & empty;
+        Bitboard promoteSinglePush = upOne & promoRank & empty;
         Bitboard promoteLeftAttack = shift<WEST>(upOne) & promoRank & enemy;
         Bitboard promoteRightAttack = shift<EAST>(upOne) & promoRank & enemy;
 
         while (promoteSinglePush)
         {
             Square to = promoteSinglePush.popLsb();
-            list.AddMove(GetMove(to + DOWN, to, BISHOP));
-            list.AddMove(GetMove(to + DOWN, to, KNIGHT));
-            list.AddMove(GetMove(to + DOWN, to, ROOK));
-            list.AddMove(GetMove(to + DOWN, to, QUEEN));
+            list.AddMove(GetMove(to + DOWN, to, EMPTY, BISHOP));
+            list.AddMove(GetMove(to + DOWN, to, EMPTY, KNIGHT));
+            list.AddMove(GetMove(to + DOWN, to, EMPTY, ROOK));
+            list.AddMove(GetMove(to + DOWN, to, EMPTY, QUEEN));
         }
 
         while (promoteLeftAttack)
@@ -88,19 +90,19 @@ static void GeneratePawnMoves(const Board &board, MoveList &list)
         }
     }
 
-    if (board.enPas != NO_SQ)
-    {
-        Square attackingPawnLeft = Square(board.enPas + int(DOWN + WEST));
-        Square attackingPawnRight = Square(board.enPas + int(DOWN + EAST));
+    if (board.enPas != NO_SQ) {
+        const Direction DOWN = side == WHITE ? SOUTH : NORTH;
+        const Bitboard bb = Bitboard(1ULL << static_cast<int>(board.enPas));
+        const Bitboard downOne = shift<DOWN>(bb);
+        const Bitboard attackingPawnLeft = shift<WEST>(downOne) & pawns;
+        const Bitboard attackingPawnRight = shift<EAST>(downOne) & pawns;
 
-        if (pawns.get(attackingPawnLeft))
-        {
-            list.AddMove(GetEnPassantMove(attackingPawnLeft, board.enPas));
+        if (attackingPawnLeft) {
+        list.AddMove(GetEnPassantMove(attackingPawnLeft.lsb(), board.enPas));
         }
 
-        if (pawns.get(attackingPawnRight))
-        {
-            list.AddMove(GetEnPassantMove(attackingPawnRight, board.enPas));
+        if (attackingPawnRight) {
+        list.AddMove(GetEnPassantMove(attackingPawnRight.lsb(), board.enPas));
         }
     }
 }
@@ -108,6 +110,18 @@ static void GeneratePawnMoves(const Board &board, MoveList &list)
 template <Piece pieceType>
 Bitboard GetPieceMask(Bitboard blockers, Square sq)
 {
+    if constexpr (pieceType == PAWN) {
+        throw std::invalid_argument("Pawn invalid pieceType for this function");
+        Bitboard out = 0;
+        return out;
+    }
+
+    if constexpr(pieceType == EMPTY) {
+        throw std::invalid_argument("Empty invalid pieceType for this function");
+        Bitboard out = 0;
+        return out;
+    }
+
     if constexpr (pieceType == KNIGHT)
         return KnightAttacks[sq];
     else if constexpr (pieceType == BISHOP)

@@ -22,15 +22,31 @@ void Perft(int depth, Board board) {
     GenerateAllMoves(board, list);
       
     int MoveNum = 0;
-	for(MoveNum = 0; MoveNum < list.count; ++MoveNum) {	
+	for(MoveNum = 0; MoveNum < list.count; ++MoveNum) {	     
 
-        //printf("%d\n", MoveNum);
-       
+#ifdef DEBUG
+        const Board oldBoard = board;
+#endif
+
         if ( !board.MakeMove(list.moves[MoveNum].move)) {
             continue;
         }
         Perft(depth - 1, board);
         board.TakeMove();
+
+#ifdef DEBUG
+        if(oldBoard != board) {
+            printf("\n*******\n\nOld Board:\n");
+            oldBoard.PrintBoard();
+            printf("New Board:\n");
+            board.PrintBoard();
+
+            board.MakeMove(list.moves[MoveNum].move);
+            printf("Move %s:\n", PrMove(list.moves[MoveNum].move));
+            board.PrintBoard();
+        }
+        ASSERT(oldBoard == board);
+#endif
     }
 
     return;
@@ -55,10 +71,10 @@ void PerftTest(int depth, Board board) {
         Perft(depth - 1, board);
         board.TakeMove();        
         long oldnodes = leafNodes - cumnodes;
-        printf("move %d : %s : %ld\n",MoveNum+1,PrMove(move),oldnodes);
+        printf("%s : %ld\n",PrMove(move),oldnodes);
     }
 	
-	printf("\nTest Complete : %ld nodes visited in %dms\n",leafNodes,GetTimeMs() - start);
+	printf("\nTest Complete : %ld nodes visited in %dms\nSpeed: %.2fM nps\n",leafNodes,GetTimeMs() - start, (float)leafNodes / (float)(GetTimeMs() - start) / 1000.0f);
 
     return;
 }

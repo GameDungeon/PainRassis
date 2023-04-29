@@ -5,6 +5,8 @@
 #include "io.h"
 #include "attacks.h"
 
+#include <stdexcept>
+
 const int CastlePerm[64] = {
     13, 15, 15, 15, 12, 15, 15, 14,
     15, 15, 15, 15, 15, 15, 15, 15,
@@ -20,6 +22,18 @@ const int CastlePerm[64] = {
 template <Piece pieceType>
 Bitboard GetPieceMask(Bitboard blockers, Square sq)
 {
+    if constexpr (pieceType == PAWN) {
+        throw std::invalid_argument("Pawn invalid pieceType for this function");
+        Bitboard out = 0;
+        return out;
+    }
+
+    if constexpr(pieceType == EMPTY) {
+        throw std::invalid_argument("Empty invalid pieceType for this function");
+        Bitboard out = 0;
+        return out;
+    }
+
     if constexpr (pieceType == KNIGHT)
         return KnightAttacks[sq];
     else if constexpr (pieceType == BISHOP)
@@ -70,9 +84,6 @@ void Board::ClearPiece(Piece piece, Square sq)
 void Board::ClearSquare(Square sq)
 {
     Piece piece = GetPieceBySq(sq);
-
-    ASSERT(piece != EMPTY)
-
     ClearPiece(piece, sq);
 }
 
@@ -82,12 +93,14 @@ void Board::MovePiece(const Square from, const Square to)
     Piece piece = GetPieceBySq(from);
     Color color = BlackBitboard.getColor(from);
 
+#ifdef DEBUG
     if (piece == EMPTY)
     {
         PrintBoard();
-        printf("%s\n", PrSq(from));
-        printf("%s\n", PrSq(to));
+        Move move = GetMove(from, to);
+        printf("Move: %s\n", PrMove(move));
     }
+#endif
 
     ASSERT(piece != EMPTY)
 
@@ -136,22 +149,25 @@ bool Board::MakeMove(Move move)
 {
     history[hisPly].posKey = posKey;
 
-    if (!AllPieceBitboard.get(move.From) || (move.Capture != EMPTY && GetPieceBySq(move.To) == EMPTY))
+#ifdef DEBUG
+    if (!AllPieceBitboard.get(move.From) || 
+       (move.Capture != EMPTY && !move.EnPassant && GetPieceBySq(move.To) == EMPTY))
     {
         printf("\n******\nMove: %s\nCapture: %d\n******\n", PrMove(move), move.Capture);
         PrintBoard();
     }
+#endif
 
     if (move.EnPassant)
     {
         if (side == WHITE)
         {
-            ASSERT(GetPieceBySq(Square(move.To + SOUTH)) != EMPTY)
+            ASSERT(AllPieceBitboard.get(move.To + SOUTH))
             ClearSquare(Square(move.To + SOUTH));
         }
         else
         {
-            ASSERT(GetPieceBySq(Square(move.To + NORTH)) != EMPTY)
+            ASSERT(AllPieceBitboard.get(move.To + NORTH))
             ClearSquare(Square(move.To + NORTH));
         }
     }
@@ -179,6 +195,7 @@ bool Board::MakeMove(Move move)
 
     if (enPas != NO_SQ)
         posKey ^= PieceKeys[WHITE][EMPTY][enPas];
+
     posKey ^= CastleKeys[castlePerm];
 
     history[hisPly].move = move;
@@ -226,7 +243,7 @@ bool Board::MakeMove(Move move)
 
     if (move.PromotedTo != EMPTY)
     {
-        ASSERT(GetPieceBySq(move.To) != EMPTY)
+        ASSERT(AllPieceBitboard.get(move.To))
         ClearSquare(move.To);
         SetPiece(move.PromotedTo, move.To, side);
     }
@@ -298,17 +315,17 @@ void Board::TakeMove()
     posKey ^= (CastleKeys[(castlePerm)]);
 
     side ^= 1;
-    posKey ^= PieceKeys[WHITE][EMPTY][(enPas)];
+    posKey ^= SideKey;
 
     if (move.EnPassant)
     {
         if (side == WHITE)
         {
-            SetPiece(PAWN, move.To + SOUTH, WHITE);
+            SetPiece(PAWN, move.To + SOUTH, BLACK);
         }
         else
         {
-            SetPiece(PAWN, move.To + NORTH, BLACK);
+            SetPiece(PAWN, move.To + NORTH, WHITE);
         }
     }
     else if (move.Castle)
@@ -337,13 +354,14 @@ void Board::TakeMove()
 
     if (move.Capture != EMPTY)
     {
-        SetPiece(move.Capture, move.To, side);
+        SetPiece(move.Capture, move.To, side ^ 1);
     }
 
     if (move.PromotedTo != EMPTY)
     {
+        ASSERT(AllPieceBitboard.get(move.From))
         ClearSquare(move.From);
-        SetPiece(PAWN, move.From, BlackBitboard.getColor(move.From));
+        SetPiece(PAWN, move.From, side);
     }
 }
 
@@ -416,7 +434,6 @@ bool Board::ParseFen(const std::string &fen)
     int rank = RANK_8;
     int file = FILE_A;
     Piece piece;
-    Color side;
     int count = 0;
     int i = 0;
     int index = 0;
@@ -575,7 +592,7 @@ Piece Board::GetPieceBySq(Square sq) const
     return EMPTY;
 }
 
-void Board::PrintBoard()
+void Board::PrintBoard() const
 {
 
     int file, rank, piece;
@@ -610,12 +627,12 @@ void Board::PrintBoard()
         printf("%3c", 'a' + file);
     }
     printf("\n");
-    printf("side:%c\n", SideChar[side]);
-    printf("enPas:%s\n", PrSq(enPas));
-    printf("castle:%c%c%c%c\n",
+    printf("side: %c\n", SideChar[side]);
+    printf("enPas: %s\n", PrSq(enPas));
+    printf("castle: %c%c%c%c\n",
            castlePerm & WKCA ? 'K' : '-',
            castlePerm & WQCA ? 'Q' : '-',
            castlePerm & BKCA ? 'k' : '-',
            castlePerm & BQCA ? 'q' : '-');
-    printf("PosKey:%llX\n", posKey);
+    printf("PosKey: %llX\n\n", posKey);
 }

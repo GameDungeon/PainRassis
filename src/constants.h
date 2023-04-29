@@ -5,7 +5,7 @@
 
 #include "init.h"
 
-#define DEBUG
+//#define DEBUG
 
 inline const std::string NAME = "Pain Rassis";
 inline const std::string VERSION = "0.1";

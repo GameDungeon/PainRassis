@@ -85,7 +85,7 @@ Move GetEnPassantMove(Square from, Square to)
     Move move;
     move.From = from;
     move.To = to;
-    move.Capture = PAWN;
+    move.Capture = EMPTY;
     move.PromotedTo = EMPTY;
     move.EnPassant = true;
     move.Castle = false;

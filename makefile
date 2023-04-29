@@ -4,7 +4,7 @@ NAME=prassis
 .PHONY: master sprt test
 
 all:
-	gcc $(SRCS) -o $(NAME) -std=c++20 -lstdc++ -pthread -O3 -Wall -Wextra -Wno-format
+	gcc $(SRCS) -o $(NAME) -std=c++20 -lstdc++ -pthread -Ofast -flto -Wall -Wextra -Wno-format
 
 master:
 	rm -rf live/*.exe

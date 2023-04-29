@@ -134,46 +134,25 @@ constexpr Bitboard rank6 = rank1 << (5 * 8);
 constexpr Bitboard rank7 = rank1 << (6 * 8);
 constexpr Bitboard rank8 = rank1 << (7 * 8);
 
-constexpr Bitboard notFileA = ~fileA;
-constexpr Bitboard notFileB = ~fileB;
-constexpr Bitboard notFileC = ~fileC;
-constexpr Bitboard notFileD = ~fileD;
-constexpr Bitboard notFileE = ~fileE;
-constexpr Bitboard notFileF = ~fileF;
-constexpr Bitboard notFileG = ~fileG;
-constexpr Bitboard notFileH = ~fileH;
-
-constexpr Bitboard notRank1 = ~rank1;
-constexpr Bitboard notRank2 = ~rank2;
-constexpr Bitboard notRank3 = ~rank3;
-constexpr Bitboard notRank4 = ~rank4;
-constexpr Bitboard notRank5 = ~rank5;
-constexpr Bitboard notRank6 = ~rank6;
-constexpr Bitboard notRank7 = ~rank7;
-constexpr Bitboard notRank8 = ~rank8;
-
 constexpr Bitboard edges = rank1 | rank8 | fileA | fileH;
 
 template <Direction direction>
 constexpr Bitboard shift(const Bitboard b)
 {
-    switch (direction)
-    {
-    case NORTH:
+    if constexpr(direction == NORTH)
         return b << 8;
-    case SOUTH:
+    else if constexpr(direction == SOUTH)
         return b >> 8;
-    case NORTH_WEST:
-        return (b & notFileA) << 7;
-    case WEST:
-        return (b & notFileA) >> 1;
-    case SOUTH_WEST:
-        return (b & notFileA) >> 9;
-    case NORTH_EAST:
-        return (b & notFileH) << 9;
-    case EAST:
-        return (b & notFileH) << 1;
-    case SOUTH_EAST:
-        return (b & notFileH) >> 7;
-    }
+    else if constexpr(direction == NORTH_WEST)
+        return (b & ~fileA) << 7;
+    else if constexpr(direction == WEST)
+        return (b & ~fileA) >> 1;
+    else if constexpr(direction == SOUTH_WEST)
+        return (b & ~fileA) >> 9;
+    else if constexpr(direction == NORTH_EAST)
+        return (b & ~fileH) << 9;
+    else if constexpr(direction == EAST)
+        return (b & ~fileH) << 1;
+    else if constexpr(direction == SOUTH_EAST)
+        return (b & ~fileH) >> 7;
 }

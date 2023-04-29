@@ -36,7 +36,7 @@ public:
     bool MakeMove(Move move);
     void TakeMove();
 
-    void PrintBoard();
+    void PrintBoard() const;
     template <Color color>
     void GenerateControlledSquares();
     void GenerateControlledSquares();
@@ -88,6 +88,29 @@ public:
         else
             return PieceBitboard[piece] & BlackBitboard;
     };
+
+    [[nodiscard]] bool operator==(Board &board) const {
+
+        if (posKey != board.posKey) {
+            return false;
+        }
+
+        if (BlackBitboard != board.BlackBitboard) {
+            return false;
+        }
+
+        if (AllPieceBitboard != board.AllPieceBitboard) {
+            return false;
+        }
+
+        for(int i = 0; i < 6; ++i) {
+            if (PieceBitboard[i] != board.PieceBitboard[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 private:
     template <Piece piece, Color color>

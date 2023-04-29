@@ -6,7 +6,6 @@
 
 void Bitboard::PrintBitboard() const
 {
-
 	Bitboard shiftMe = 1ULL;
 
 	int rank = 0;

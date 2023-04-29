@@ -13,18 +13,9 @@ int main()
     AllInit();
 
     Board board;
-    //board.ParseFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
-
-    //board.PrintBoard();
-
-    //MoveList list;
-    //GenerateAllMoves(board, list);
-
-    //PrintMoveList(list);
-
     board.ParseFen(STARTING_FEN);
 
-    PerftTest(3, board); // KNIGHT?
+    PerftTest(6, board);
 
     return 0;
 }

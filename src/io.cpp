@@ -27,15 +27,13 @@ char *PrMove(const Move move) {
     int ft = FilesBrd[move.To];
     int rt = RanksBrd[move.To];
 
-    int promoted = move.PromotedTo;
-
-    if(promoted != EMPTY) {
+    if(move.PromotedTo != EMPTY) {
         char pchar = 'q';
-        if(promoted == KNIGHT) {
+        if(move.PromotedTo == KNIGHT) {
             pchar = 'n';
-        } else if(promoted == ROOK)  {
+        } else if(move.PromotedTo == ROOK)  {
             pchar = 'r';
-        } else if(promoted == BISHOP)  {
+        } else if(move.PromotedTo == BISHOP)  {
             pchar = 'b';
         }
         sprintf(MvStr, "%c%c%c%c%c", ('a'+ff), ('1'+rf), ('a'+ft), ('1'+rt), pchar);
